@@ -1,0 +1,47 @@
+# @package _global_
+ind_dataset: "voc"
+# Experiment name for mlflow logging
+mlflow_experiment_name: RCNN_${ind_dataset}_boxes_ood_detection
+
+ood_datasets: ["coco_ood_near", "coco_ood_far", "openimages_ood_far", "openimages_ood_near"]
+#ood_datasets: ["coco_farther", "openimages_farther"]
+
+
+# Extraction parameters
+z_score_thresholds: 1.645
+metric_2007: False
+get_known_classes_metrics: False
+
+# Ground truth annotations
+ind_annotations_path:
+    voc: "../CVDatasets/VOC_0712_converted/val_coco_format.json"
+    bdd: "../CVDatasets/bdd100k/val_bdd_converted.json"
+ood_annotations_paths:
+    voc:
+        openimages_ood_far: "../CVDatasets/FMIYC/OpenImages/COCO-Format/far_oi_wrt_voc.json"
+        openimages_ood_near: "../CVDatasets/FMIYC/OpenImages/COCO-Format/near_oi_wrt_voc.json"
+        coco_ood_far: "../CVDatasets/FMIYC/COCO/annotations/far_coco_wrt_voc.json"
+        coco_ood_near: "../CVDatasets/FMIYC/COCO/annotations/near_coco_wrt_voc.json"
+    bdd:
+        openimages_farther: "../CVDatasets/FMIYC/OpenImages/COCO-Format/farther_oi_wrt_bdd.json"
+        coco_farther: "../CVDatasets/FMIYC/COCO/annotations/farther_coco_wrt_bdd.json"
+
+
+# Automatically determined parameters (not to be modified)
+work_dir: ${hydra:runtime.cwd}
+log_dir: logs_hydra/runs/${mlflow_experiment_name}/${now:%Y-%m-%d_%H-%M-%S}
+#latent_samples_folder: ./Extracted_latent_samples/boxes/ind_${ind_dataset}/${hooked_module}
+
+defaults:
+  - _self_
+  - override hydra/hydra_logging: disabled
+  - override hydra/job_logging: disabled
+
+hydra:
+    # output paths for hydra logs
+    run:
+        dir: .
+
+    sweep:
+        dir: logs_hydra/multiruns/${now:%Y-%m-%d_%H-%M-%S}
+        subdir: ${hydra.job.num}
