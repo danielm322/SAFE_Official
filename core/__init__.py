@@ -26,4 +26,4 @@ def configs_dir():
     Returns configs directory
     :return: (str) Configs directory
     """
-    return os.sep.join([top_dir(), 'detection', 'configs'])
+    return os.sep.join([top_dir(), 'SAFE_Official', 'configs'])
