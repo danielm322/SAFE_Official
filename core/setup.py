@@ -298,7 +298,8 @@ def setup_config(args, random_seed=None, is_testing=False, ood=False):
 	# try:
 	setup_all_datasets(
 		dataset_dir,
-		image_root_corruption_prefix=image_root_corruption_prefix)
+		image_root_corruption_prefix=image_root_corruption_prefix,
+		dataset_name=args.test_dataset)
 	return cfg
 	# except AssertionError:
 	# 	print('hhh')

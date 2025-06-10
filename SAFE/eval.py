@@ -29,7 +29,8 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def main(args):
 	dset = "VOC" if "VOC" in args.config_file else "BDD"
-	data_dir = os.path.join(args.dataset_dir, "..")
+	# data_dir = os.path.join(args.dataset_dir, "..")
+	data_dir = os.path.dirname(os.path.dirname(args.dataset_dir))
 	data_file = os.path.join(data_dir, "safe", f"{dset}-{args.variant}-standard.hdf5")
 
 	## Error checking
@@ -77,7 +78,8 @@ def main(args):
 	ood_scoring = partial(safe_forward, MLP=meta_classifier.cuda().eval(), means=means) 
 	
 	# ## Load ID/OOD datasets
-	cfgs, datasets, mappings, names = data.setup_test_datasets(args, cfg, model_utils)
+	# cfgs, datasets, mappings, names = data.setup_test_datasets(args, cfg, model_utils)
+	cfgs, datasets, mappings, names = data.setup_fmiyc_test_datasets(args, cfg, model_utils)
 
 	final_results = []
 	for cfg, dataloader, mapping_dict, name in tqdm(zip(cfgs, datasets, mappings, names)):
@@ -140,7 +142,7 @@ def main(args):
 		
 		final_results.append(processed_results)
 
-		os.remove(os.path.join(output_dir, f'coco_instances_results_SAFE_{args.variant.upper()}.json'))
+		# os.remove(os.path.join(output_dir, f'coco_instances_results_SAFE_{args.variant.upper()}.json'))
 		
 	#####################################
 	### Compute OOD performance metrics

@@ -2,14 +2,15 @@ from core.evaluation_tools.evaluation_utils import get_train_contiguous_id_to_te
 from detectron2.data import build_detection_test_loader, MetadataCatalog
 from core.setup import setup_config
 from torch.utils.data import Dataset
-
+from os.path import dirname
 import torch
 import numpy as np
 
 def setup_test_datasets(args, cfg, variant):
 	coco_name = 'coco_ood_val{}'.format('_bdd' if 'BDD' in args.config_file else '')
 	names = [args.test_dataset, coco_name, 'openimages_ood_val']
-	dirs = [args.dataset_dir, './../data/COCO', './../data/OpenImages/']
+	data_dir = dirname(dirname(args.dataset_dir))
+	dirs = [args.dataset_dir, f'{data_dir}/COCO', f'{data_dir}/OpenImages/']
 	cfgs, datasets, map_dicts = [], [], []
 
 	for idx, (name, direct) in enumerate(zip(names, dirs)):
@@ -29,6 +30,59 @@ def setup_test_datasets(args, cfg, variant):
 		train_thing_dataset_id_to_contiguous_id = MetadataCatalog.get(
 			cfg.DATASETS.TRAIN[0]).thing_dataset_id_to_contiguous_id
 		
+		test_thing_dataset_id_to_contiguous_id = MetadataCatalog.get(
+			args.test_dataset).thing_dataset_id_to_contiguous_id
+
+		# If both dicts are equal or if we are performing out of distribution
+		# detection, just flip the test dict.
+		cat_mapping_dict = get_train_contiguous_id_to_test_thing_dataset_id_dict(
+			cfg,
+			args,
+			train_thing_dataset_id_to_contiguous_id,
+			test_thing_dataset_id_to_contiguous_id
+		)
+		cfgs.append(cfg)
+		datasets.append(data_loader)
+		map_dicts.append(cat_mapping_dict)
+
+	return cfgs, datasets, map_dicts, names
+
+def setup_fmiyc_test_datasets(args, cfg, variant):
+	if "voc" in cfg.DATASETS.TRAIN[0]:
+		# coco_name = 'coco_ood_val{}'.format('_bdd' if 'BDD' in args.config_file else '')
+		names = [args.test_dataset, "coco_ood_near", "coco_ood_far", "openimages_ood_near", "openimages_ood_far"]
+		data_dir = dirname(dirname(args.dataset_dir))
+		dirs = [
+			args.dataset_dir,
+			f'{data_dir}/FMIYC/COCO',
+			f'{data_dir}/FMIYC/COCO',
+			f'{data_dir}/FMIYC/OpenImages',
+			f'{data_dir}/FMIYC/OpenImages'
+		]
+	# BDD as ID
+	else:
+		names = [args.test_dataset, "coco_ood_farther", "openimages_ood_farther"]
+		data_dir = dirname(dirname(args.dataset_dir))
+		dirs = [args.dataset_dir, f'{data_dir}/FMIYC/COCO', f'{data_dir}/FMIYC/OpenImages']
+	cfgs, datasets, map_dicts = [], [], []
+
+	for idx, (name, direct) in enumerate(zip(names, dirs)):
+		args.test_dataset = name
+		args.dataset_dir = direct
+		if idx:
+			cfg = setup_config(args,
+							   random_seed=args.random_seed,
+							   is_testing=True
+							   )
+		data_loader = build_detection_test_loader(
+			cfg,
+			mapper=variant.get_mapper(),
+			dataset_name=args.test_dataset
+		)
+
+		train_thing_dataset_id_to_contiguous_id = MetadataCatalog.get(
+			cfg.DATASETS.TRAIN[0]).thing_dataset_id_to_contiguous_id
+
 		test_thing_dataset_id_to_contiguous_id = MetadataCatalog.get(
 			args.test_dataset).thing_dataset_id_to_contiguous_id
 

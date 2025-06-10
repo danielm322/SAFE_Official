@@ -599,7 +599,9 @@ def get_train_contiguous_id_to_test_thing_dataset_id_dict(
         # ipdb.set_trace()
         # If not equal, three situations: 1) BDD to KITTI, 2) COCO to PASCAL,
         # or 3) COCO to OpenImages
-        if 'coco_ood_val' == args.test_dataset and 'voc_custom_train' == cfg.DATASETS.TRAIN[0]:
+        if ('coco_ood_val' == args.test_dataset or
+            'coco_ood_far' == args.test_dataset or
+            'coco_ood_near' == args.test_dataset) and ('voc_custom_train' == cfg.DATASETS.TRAIN[0]):
             from collections import ChainMap
             cat_mapping_dict = dict(
                         ChainMap(*[{i: i + 1} for i in range(20)]))
@@ -608,7 +610,9 @@ def get_train_contiguous_id_to_test_thing_dataset_id_dict(
             from collections import ChainMap
             cat_mapping_dict = dict(
                         ChainMap(*[{i: i + 1} for i in range(10)]))
-        elif 'openimages_ood_val' == args.test_dataset and 'voc_custom_train' == cfg.DATASETS.TRAIN[0]:
+        elif ('openimages_ood_val' == args.test_dataset or
+              'openimages_ood_far' == args.test_dataset or
+              'openimages_ood_near' == args.test_dataset) and ('voc_custom_train' == cfg.DATASETS.TRAIN[0]):
             from collections import ChainMap
             cat_mapping_dict = dict(
                 ChainMap(*[{i: i + 1} for i in range(20)]))

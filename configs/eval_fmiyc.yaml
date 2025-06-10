@@ -11,6 +11,7 @@ ood_datasets: ["coco_ood_near", "coco_ood_far", "openimages_ood_far", "openimage
 z_score_thresholds: 1.645
 metric_2007: False
 get_known_classes_metrics: False
+min_allowed_score: 0.56
 
 # Ground truth annotations
 ind_annotations_path:

@@ -8,7 +8,7 @@ from detectron2.data.datasets import register_coco_instances
 import core.datasets.metadata as metadata
 
 
-def setup_all_datasets(dataset_dir, image_root_corruption_prefix=None):
+def setup_all_datasets(dataset_dir, image_root_corruption_prefix=None, dataset_name=None):
     """
     Registers all datasets as instances from COCO
 
@@ -18,16 +18,28 @@ def setup_all_datasets(dataset_dir, image_root_corruption_prefix=None):
     """
     if "VOC" in dataset_dir:
         setup_voc_dataset(dataset_dir)
-    if "COCO" in dataset_dir:
+    if "COCO" in dataset_dir and not 'FMIYC' in dataset_dir:
         setup_coco_dataset(
             dataset_dir,
             image_root_corruption_prefix=image_root_corruption_prefix)
         setup_coco_ood_bdd_dataset(dataset_dir)
         setup_coco_ood_dataset(dataset_dir)
-    if "OpenImages" in dataset_dir:
+    if "OpenImages" in dataset_dir and not 'FMIYC' in dataset_dir:
         setup_openim_odd_dataset(dataset_dir)
     if "bdd" in dataset_dir:
         setup_bdd_dataset(dataset_dir)
+    if "FMIYC/COCO" in dataset_dir and dataset_name == "coco_ood_near":
+        setup_coco_ood_near_dataset(dataset_dir)
+    if "FMIYC/COCO" in dataset_dir and dataset_name == "coco_ood_far":
+        setup_coco_ood_far_dataset(dataset_dir)
+    if "FMIYC/COCO" in dataset_dir and dataset_name == "coco_ood_farther":
+        setup_coco_ood_farther_wrt_bdd_dataset(dataset_dir)
+    if "FMIYC/OpenImages" in dataset_dir and dataset_name == "openimages_ood_near":
+        setup_openim_ood_near_dataset(dataset_dir)
+    if "FMIYC/OpenImages" in dataset_dir and dataset_name == "openimages_ood_far":
+        setup_openim_ood_far_dataset(dataset_dir)
+    if "FMIYC/OpenImages" in dataset_dir and dataset_name == "openimages_ood_farther":
+        setup_openim_farther_ood_wrt_bdd_dataset(dataset_dir)
         
 
 def setup_coco_dataset(dataset_dir, image_root_corruption_prefix=None):
@@ -304,3 +316,140 @@ def setup_openimages_ood_oe_dataset(dataset_dir):
         "openimages_ood_oe").thing_classes = metadata.COCO_THING_CLASSES
     MetadataCatalog.get(
         "openimages_ood_oe").thing_dataset_id_to_contiguous_id = metadata.OPENIMAGES_THING_DATASET_ID_TO_CONTIGUOUS_ID
+
+
+# FMIYC benchmark datasets
+def setup_openim_farther_ood_wrt_bdd_dataset(dataset_dir):
+    """
+    sets up openimages out-of-distribution dataset following detectron2 coco instance format. Required to not have flexibility on where the dataset
+    files can be.
+
+    Only validation is supported.
+    """
+    # Ugly but desperate measure to be able to load ood test set at the same time as bdd test set
+    # dataset_dir = "../../CVDatasets/OpenImages/"
+    test_image_dir = os.path.join(dataset_dir, 'farther_images_wrt_bdd')
+
+    test_json_annotations = os.path.join(
+        dataset_dir, 'COCO-Format', 'farther_oi_wrt_bdd.json')
+
+    register_coco_instances(
+        "openimages_ood_farther",
+        {},
+        test_json_annotations,
+        test_image_dir)
+    MetadataCatalog.get(
+        "openimages_ood_farther").thing_classes = metadata.OPENIMAGES_THING_CLASSES
+    MetadataCatalog.get(
+        "openimages_ood_farther").thing_dataset_id_to_contiguous_id = metadata.OPENIMAGES_THING_DATASET_ID_TO_CONTIGUOUS_ID_ORIGINAL
+
+def setup_openim_ood_far_dataset(dataset_dir):
+    """
+    sets up openimages out-of-distribution dataset following detectron2 coco instance format. Required to not have flexibility on where the dataset
+    files can be.
+
+    Only validation is supported.
+    """
+    # Ugly but desperate measure to be able to load ood test set at the same time as bdd test set
+    # dataset_dir = "../../CVDatasets/OpenImages/id_voc_ood_openimages/ood_classes_rm_overlap"
+    test_image_dir = os.path.join(dataset_dir, 'far_images_wrt_voc')
+
+    test_json_annotations = os.path.join(
+        dataset_dir, 'COCO-Format', 'far_oi_wrt_voc.json')
+
+    register_coco_instances(
+        "openimages_ood_far",
+        {},
+        test_json_annotations,
+        test_image_dir)
+    MetadataCatalog.get(
+        "openimages_ood_far").thing_classes = metadata.OPENIMAGES_THING_CLASSES
+    MetadataCatalog.get(
+        "openimages_ood_far").thing_dataset_id_to_contiguous_id = metadata.OPENIMAGES_THING_DATASET_ID_TO_CONTIGUOUS_ID_ORIGINAL
+
+def setup_openim_ood_near_dataset(dataset_dir):
+    """
+    sets up openimages out-of-distribution dataset following detectron2 coco instance format. Required to not have flexibility on where the dataset
+    files can be.
+
+    Only validation is supported.
+    """
+    # Ugly but desperate measure to be able to load ood test set at the same time as bdd test set
+    # dataset_dir = "../../CVDatasets/OpenImages/id_voc_ood_openimages/ood_classes_rm_overlap"
+    test_image_dir = os.path.join(dataset_dir, 'near_images_wrt_voc')
+
+    test_json_annotations = os.path.join(
+        dataset_dir, 'COCO-Format', 'near_oi_wrt_voc.json')
+
+    register_coco_instances(
+        "openimages_ood_near",
+        {},
+        test_json_annotations,
+        test_image_dir)
+    MetadataCatalog.get(
+        "openimages_ood_near").thing_classes = metadata.OPENIMAGES_THING_CLASSES
+    MetadataCatalog.get(
+        "openimages_ood_near").thing_dataset_id_to_contiguous_id = metadata.OPENIMAGES_THING_DATASET_ID_TO_CONTIGUOUS_ID_ORIGINAL
+
+def setup_coco_ood_farther_wrt_bdd_dataset(dataset_dir):
+    # Ugly but desperate measure to be able to load coco ood test set at the same time as bdd test set
+    # dataset_dir = "../../CVDatasets/COCO"
+    test_image_dir = os.path.join(dataset_dir, 'farther_images_wrt_bdd')
+
+    # test_json_annotations = os.path.join(
+    #     dataset_dir, 'COCO-Format', 'val_coco_format.json')
+    test_json_annotations = os.path.join(
+        dataset_dir, 'annotations', 'farther_coco_wrt_bdd.json')
+
+    register_coco_instances(
+        "coco_ood_farther",
+        {},
+        test_json_annotations,
+        test_image_dir)
+    # import ipdb; ipdb.set_trace()
+    MetadataCatalog.get(
+        "coco_ood_farther").thing_classes = metadata.COCO_THING_CLASSES
+    MetadataCatalog.get(
+        "coco_ood_farther").thing_dataset_id_to_contiguous_id = metadata.COCO_THING_DATASET_ID_TO_CONTIGUOUS_ID
+
+def setup_coco_ood_far_dataset(dataset_dir):
+    # Ugly but desperate measure to be able to load coco ood test set at the same time as bdd test set
+    # dataset_dir = "../../CVDatasets/COCO"
+    test_image_dir = os.path.join(dataset_dir, 'far_images_wrt_voc')
+
+    # test_json_annotations = os.path.join(
+    #     dataset_dir, 'COCO-Format', 'val_coco_format.json')
+    test_json_annotations = os.path.join(
+        dataset_dir, 'annotations', 'far_coco_wrt_voc.json')
+
+    register_coco_instances(
+        "coco_ood_far",
+        {},
+        test_json_annotations,
+        test_image_dir)
+    # import ipdb; ipdb.set_trace()
+    MetadataCatalog.get(
+        "coco_ood_far").thing_classes = metadata.COCO_THING_CLASSES
+    MetadataCatalog.get(
+        "coco_ood_far").thing_dataset_id_to_contiguous_id = metadata.COCO_THING_DATASET_ID_TO_CONTIGUOUS_ID
+
+def setup_coco_ood_near_dataset(dataset_dir):
+    # Ugly but desperate measure to be able to load coco ood test set at the same time as bdd test set
+    # dataset_dir = "../../CVDatasets/COCO"
+    test_image_dir = os.path.join(dataset_dir, 'near_images_wrt_voc')
+
+    # test_json_annotations = os.path.join(
+    #     dataset_dir, 'COCO-Format', 'val_coco_format.json')
+    test_json_annotations = os.path.join(
+        dataset_dir, 'annotations', 'near_coco_wrt_voc.json')
+
+    register_coco_instances(
+        "coco_ood_near",
+        {},
+        test_json_annotations,
+        test_image_dir)
+    # import ipdb; ipdb.set_trace()
+    MetadataCatalog.get(
+        "coco_ood_near").thing_classes = metadata.COCO_THING_CLASSES
+    MetadataCatalog.get(
+        "coco_ood_near").thing_dataset_id_to_contiguous_id = metadata.COCO_THING_DATASET_ID_TO_CONTIGUOUS_ID

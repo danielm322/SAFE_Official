@@ -5,6 +5,7 @@ import hydra
 import json
 import torch
 import numpy as np
+from ls_ood_detect_cea.uncertainty_estimation import COCOParser
 
 
 @hydra.main(config_path="configs", config_name="eval_fmiyc.yaml")
@@ -18,13 +19,14 @@ def main(cfg):
         # coco_name = 'coco_ood_val{}'.format('_bdd' if 'BDD' in args.config_file else '')
         # names = [args.test_dataset, "coco_ood_near", "coco_ood_far", "openimages_ood_near", "openimages_ood_far"]
         ind_file_name = f"{base_data_folder}/{cfg.ind_dataset}_custom_val/{inference_file_names}"
-        ind_data = json.load(open(ind_file_name, 'r'))
-        print(len(ind_data))
+        ind_data_raw = json.load(open(ind_file_name, 'r'))
+        # Filter inference results based on threshold
+        ind_data_preprocessed = eval_predictions_preprocess(ind_data_raw, min_allowed_score=cfg.min_allowed_score)
         for ood_dataset_name in cfg.ood_datasets:
             ood_file_name = f"{base_data_folder}/{ood_dataset_name}/{inference_file_names}"
             ood_data_raw[ood_dataset_name] = json.load(open(ood_file_name, 'r'))
-            ood_data_processed[ood_dataset_name] = eval_predictions_preprocess(ood_data_raw[ood_dataset_name], min_allowed_score=0.56)
-
+            # Filter inference results based on threshold
+            ood_data_processed[ood_dataset_name] = eval_predictions_preprocess(ood_data_raw[ood_dataset_name], min_allowed_score=cfg.min_allowed_score)
 
     # BDD as ID
     else:
@@ -32,25 +34,38 @@ def main(cfg):
         # data_dir = dirname(dirname(args.dataset_dir))
         raise NotImplementedError
 
-    # Filter inference results based on threshold
+    # Read GT annotations
+    ind_annotations = COCOParser(cfg.ind_annotations_path[cfg.ind_dataset])
+    ood_annotations = {}
+    for ood_dataset_name in cfg.ood_datasets:
+        ood_annotations[ood_dataset_name] = COCOParser(cfg.ood_annotations_paths[cfg.ind_dataset][ood_dataset_name])
+
+    # Complete the missing images entries with empty predictions
+    for ood_dataset_name in cfg.ood_datasets:
+        ood_data_processed[ood_dataset_name] = fill_missing_im_ids_predictions(
+            ood_annotations[ood_dataset_name],
+            ood_data_processed[ood_dataset_name]
+        )
+
+def fill_missing_im_ids_predictions(annotations: COCOParser, predictions: Dict) -> Dict:
+    for im_id in annotations.annIm_dict.keys():
+        if im_id not in predictions.keys():
+            predictions[im_id] = {
+                "boxes": torch.tensor([], dtype=torch.float32),
+                "logits": torch.tensor([], dtype=torch.float32),
+                "safe": [],
+            }
+
+    return predictions
 
 
 def eval_predictions_preprocess(
         predicted_instances: List[Dict],
-        min_allowed_score: float = 0.0,
-        is_odd=True,
-):
+        min_allowed_score: float,
+) -> Dict:
     predictions = dict()
 
     for predicted_instance in predicted_instances:
-        # Remove predictions with undefined category_id. This is used when the training and
-        # inference datasets come from different data such as COCO-->VOC or COCO-->OpenImages.
-        # Only happens if not ODD dataset, else all detections will be removed.
-
-        # if len(predicted_instance['cls_prob']) == 81 or len(predicted_instance['cls_prob']) == 21 or len(predicted_instance['cls_prob']) == 11:
-        #     cls_prob = predicted_instance['cls_prob'][:-1]
-        # else:
-        #     cls_prob = predicted_instance['cls_prob']
         cls_prob = predicted_instance['cls_prob']
         box_inds = predicted_instance['bbox']
         box_inds = np.array([box_inds[0],
