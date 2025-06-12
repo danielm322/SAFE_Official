@@ -1,3 +1,5 @@
+from typing import Dict, List
+
 import numpy as np
 import sklearn.metrics as sk
 
@@ -96,6 +98,26 @@ def fpr_and_fdr_at_recall(y_true, y_score, recall_level=recall_level_default,
     else:
         return fps[cutoff] / (np.sum(np.logical_not(y_true)))
     # , fps[cutoff]/(fps[cutoff] + tps[cutoff])
+
+
+def convert_auroc_results_to_pandas_df(
+    results: Dict[str, Dict[str, float]],
+    dataset_names: List[str],
+    dataset_as_data: bool,
+):
+    import pandas as pd
+    if dataset_as_data:
+        col_names = ["Dataset"] + list(results[list(results.keys())[0]].keys())
+    else:
+        col_names = list(results[list(results.keys())[0]].keys())
+    new_dict = {}
+    for dataset in dataset_names:
+        if dataset_as_data:
+            new_dict[dataset] = [dataset] + list(results[dataset].values())
+        else:
+            new_dict[dataset] = list(results[dataset].values())
+    df = pd.DataFrame.from_dict(new_dict, orient="index", columns=col_names)
+    return df
 
 
 def get_measures(_pos, _neg, recall_level=recall_level_default, return_index=False, plot=False):
