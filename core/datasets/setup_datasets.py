@@ -317,8 +317,9 @@ def setup_openimages_ood_oe_dataset(dataset_dir):
     MetadataCatalog.get(
         "openimages_ood_oe").thing_dataset_id_to_contiguous_id = metadata.OPENIMAGES_THING_DATASET_ID_TO_CONTIGUOUS_ID
 
-
+##################################################################################
 # FMIYC benchmark datasets
+##################################################################################
 def setup_openim_farther_ood_wrt_bdd_dataset(dataset_dir):
     """
     sets up openimages out-of-distribution dataset following detectron2 coco instance format. Required to not have flexibility on where the dataset
@@ -326,8 +327,6 @@ def setup_openim_farther_ood_wrt_bdd_dataset(dataset_dir):
 
     Only validation is supported.
     """
-    # Ugly but desperate measure to be able to load ood test set at the same time as bdd test set
-    # dataset_dir = "../../CVDatasets/OpenImages/"
     test_image_dir = os.path.join(dataset_dir, 'farther_images_wrt_bdd')
 
     test_json_annotations = os.path.join(
@@ -350,8 +349,6 @@ def setup_openim_ood_far_dataset(dataset_dir):
 
     Only validation is supported.
     """
-    # Ugly but desperate measure to be able to load ood test set at the same time as bdd test set
-    # dataset_dir = "../../CVDatasets/OpenImages/id_voc_ood_openimages/ood_classes_rm_overlap"
     test_image_dir = os.path.join(dataset_dir, 'far_images_wrt_voc')
 
     test_json_annotations = os.path.join(
@@ -374,8 +371,6 @@ def setup_openim_ood_near_dataset(dataset_dir):
 
     Only validation is supported.
     """
-    # Ugly but desperate measure to be able to load ood test set at the same time as bdd test set
-    # dataset_dir = "../../CVDatasets/OpenImages/id_voc_ood_openimages/ood_classes_rm_overlap"
     test_image_dir = os.path.join(dataset_dir, 'near_images_wrt_voc')
 
     test_json_annotations = os.path.join(
