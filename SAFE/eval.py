@@ -211,6 +211,23 @@ def compute_metrics(results):
 		metrics.print_measures(measures[0], measures[1], measures[2], 'SAFE')
 
 
+def compute_metrics_FMIYC(results):
+	if len(results) == 5:
+		ood_datasets = ["coco_ood_near", "coco_ood_far", "openimages_ood_near", "openimages_ood_far"]
+	elif len(results) == 3:
+		ood_datasets = ["coco_ood_farther", "openimages_ood_farther"]
+	else:
+		raise ValueError("len(results) should be 3 or 5")
+	id_score = torch.stack(results[0]['logistic_score']).cpu().numpy()
+	ood_scores = {}
+	for idx, ood_dataset_name in enumerate(ood_datasets):
+		ood_scores[ood_dataset_name] = torch.stack(results[idx+1]['logistic_score']).cpu().numpy()
+
+	for name, ood_score in ood_scores.items():
+		print(f'Metrics for {name}: ')
+		measures = metrics.get_measures(-id_score, -ood_score, plot=False)
+		metrics.print_measures(measures[0], measures[1], measures[2], 'SAFE')
+
 
 def interface(args):
 	print(args)

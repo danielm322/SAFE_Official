@@ -18,7 +18,7 @@ def data_dir():
     Returns data directory. Data directory should never be in src, especially when using IDEs.
     :return:(str) data directory
     """
-    return top_dir() + '/detection/data'
+    return top_dir() + '/SAFE_Official' + '/data'
 
 
 def configs_dir():
