@@ -4,14 +4,14 @@ ind_dataset: "voc"
 mlflow_experiment_name: RCNN_${ind_dataset}_boxes_ood_detection
 
 ood_datasets: ["coco_ood_near", "coco_ood_far", "openimages_ood_far", "openimages_ood_near"]
-#ood_datasets: ["coco_farther", "openimages_farther"]
+#ood_datasets: ["coco_ood_farther", "openimages_ood_farther"]
 
 
 # Extraction parameters
 z_score_thresholds: 1.645
 metric_2007: False
 get_known_classes_metrics: False
-min_allowed_score: 0.56
+min_allowed_score: 0.55
 
 # Ground truth annotations
 ind_annotations_path:
@@ -24,8 +24,8 @@ ood_annotations_paths:
         coco_ood_far: "../CVDatasets/FMIYC/COCO/annotations/far_coco_wrt_voc.json"
         coco_ood_near: "../CVDatasets/FMIYC/COCO/annotations/near_coco_wrt_voc.json"
     bdd:
-        openimages_farther: "../CVDatasets/FMIYC/OpenImages/COCO-Format/farther_oi_wrt_bdd.json"
-        coco_farther: "../CVDatasets/FMIYC/COCO/annotations/farther_coco_wrt_bdd.json"
+        openimages_ood_farther: "../CVDatasets/FMIYC/OpenImages/COCO-Format/farther_oi_wrt_bdd.json"
+        coco_ood_farther: "../CVDatasets/FMIYC/COCO/annotations/farther_coco_wrt_bdd.json"
 
 
 # Automatically determined parameters (not to be modified)
